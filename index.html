@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="一座收藏两个人共同回忆的私人数字天文馆。"
+    />
+    <meta name="theme-color" content="#050711" />
+    <title>Our Galaxy · 私人星图</title>
+    <link rel="stylesheet" href="./assets/css/styles.css?v=26" />
+  </head>
+  <body>
+    <!-- 动态银河：装饰画布不参与键盘导航。 -->
+    <canvas id="galaxy-canvas" aria-hidden="true"></canvas>
+
+    <!-- 视觉氛围层：暗角、胶片颗粒和页面光晕。 -->
+    <div class="atmosphere" aria-hidden="true">
+      <div class="atmosphere__glow"></div>
+      <div class="atmosphere__noise"></div>
+      <div class="atmosphere__vignette"></div>
+    </div>
+
+    <!-- 故事星使用真实按钮呈现，兼顾鼠标、触屏和键盘操作。 -->
+    <div class="story-layer" id="story-layer" aria-label="回忆星图"></div>
+
+    <main class="app-shell">
+      <header class="observatory-header">
+        <a class="brand" href="#home" aria-label="返回私人星图首页">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span>
+            <strong>OUR GALAXY</strong>
+            <small>PRIVATE OBSERVATORY</small>
+          </span>
+        </a>
+
+        <div class="observatory-actions">
+          <div class="observation-status" aria-label="星图状态">
+            <span class="observation-status__signal" aria-hidden="true"></span>
+            <span>STAR MAP ONLINE</span>
+          </div>
+
+          <button
+            class="maker-launch"
+            id="maker-open"
+            type="button"
+            aria-controls="maker-panel"
+            aria-haspopup="dialog"
+          >
+            <span class="maker-launch__plus" aria-hidden="true">＋</span>
+            <span>添加星星</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 序章：首页只负责建立情绪，点击后进入时间航行。 -->
+      <section class="hero" id="home" aria-labelledby="hero-title">
+        <div class="hero__content">
+          <p class="hero__eyebrow">OUR FREQUENCY</p>
+
+          <!-- 两个人的名字由一段声音波形连接，记录因音乐相识的起点。 -->
+          <div class="hero__duet" aria-label="吴玉清与李紫凝，因为喜欢的乐队相识">
+            <span class="hero__person">
+              <small>WU YUQING</small>
+              <strong>吴玉清</strong>
+            </span>
+            <span class="hero__frequency" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </span>
+            <span class="hero__person hero__person--right">
+              <small>LI ZINING</small>
+              <strong>李紫凝</strong>
+            </span>
+          </div>
+
+          <h1 id="hero-title">
+            因同一段旋律相识
+            <span>后来拥有了同一片银河</span>
+          </h1>
+          <p class="hero__intro">
+            一支共同喜欢的乐队，让两个原本陌生的坐标听见彼此。
+            音乐曾让我们相遇，也会继续陪着我们，把往后的日子写成一首很长的歌。
+          </p>
+
+          <div class="hero__origin" aria-label="在一起的纪念日为 2025 年 11 月 29 日">
+            <span class="hero__origin-dot" aria-hidden="true"></span>
+            <span>
+              <small>RELATIONSHIP ORIGIN · 关系时间原点</small>
+              <time datetime="2025-11-29">2025.11.29</time>
+            </span>
+            <em>因音乐相识</em>
+          </div>
+
+          <button class="enter-button" id="enter-galaxy" type="button">
+            <span>开始校准星图</span>
+            <span class="enter-button__orbit" aria-hidden="true"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 航行 HUD：时间刻度只作为提示，不用线条连接故事星。 -->
+      <section class="journey-hud" id="journey-hud" aria-live="polite">
+        <div class="journey-hud__chapter">
+          <span id="chapter-index">YEAR 01</span>
+          <span class="journey-hud__rule" aria-hidden="true"></span>
+          <span id="chapter-name">初见之年</span>
+        </div>
+
+        <div class="journey-hud__memory">
+          <time id="current-date" datetime="2022">2022</time>
+          <h2 id="current-title">故事开始拥有坐标</h2>
+          <p id="current-excerpt">我们从陌生走向彼此，这一年的每个第一次，都成为后来银河的起点。</p>
+          <p class="year-memory-count" id="year-memory-count">5 MEMORIES · 5 颗故事星</p>
+        </div>
+
+        <p class="journey-hud__hint" id="journey-hint">
+          <span aria-hidden="true">⌄</span>
+          向下滑动，沿时间继续航行
+        </p>
+      </section>
+
+      <!-- 模式与时间刻度：桌面位于右侧，手机位于底部。 -->
+      <aside class="star-controls" aria-label="星图控制">
+        <div class="view-switch" role="group" aria-label="查看模式">
+          <button class="view-switch__button is-active" data-view="journey" type="button">
+            航行
+          </button>
+          <button class="view-switch__button" data-view="map" type="button">
+            星图
+          </button>
+        </div>
+
+        <nav class="year-navigation" id="year-navigation" aria-label="选择年度星域"></nav>
+      </aside>
+
+      <!-- 完整回忆卡：照片保存在当前浏览器的 IndexedDB 中。 -->
+      <dialog class="signal-preview" id="signal-preview" aria-labelledby="preview-title">
+        <button class="signal-preview__close" type="button" aria-label="关闭回忆预览">×</button>
+
+        <div class="memory-card">
+          <!-- 左侧照片观测窗；无照片时显示上传引导。 -->
+          <section class="memory-gallery" aria-label="回忆照片">
+            <div class="memory-gallery__stage">
+              <div class="memory-gallery__empty" id="gallery-empty">
+                <span class="memory-gallery__empty-star" aria-hidden="true"></span>
+                <p>这颗星还没有影像</p>
+                <small>添加一张照片，让这段回忆显影</small>
+              </div>
+              <img id="gallery-image" alt="" hidden />
+              <div class="memory-gallery__counter" id="gallery-counter" hidden>01 / 01</div>
+              <button class="memory-gallery__nav memory-gallery__nav--prev" id="gallery-prev" type="button" aria-label="上一张照片" hidden>‹</button>
+              <button class="memory-gallery__nav memory-gallery__nav--next" id="gallery-next" type="button" aria-label="下一张照片" hidden>›</button>
+            </div>
+
+            <div class="memory-gallery__thumbs" id="gallery-thumbs" aria-label="照片缩略图"></div>
+
+            <div class="memory-gallery__actions">
+              <label class="photo-upload" for="photo-input">
+                <span>＋ 添加照片</span>
+                <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple />
+              </label>
+              <button id="set-cover-photo" type="button" hidden>设为封面</button>
+              <button class="memory-gallery__delete" id="delete-photo" type="button" hidden>删除当前照片</button>
+            </div>
+            <p class="memory-gallery__status" id="photo-status" role="status"></p>
+          </section>
+
+          <!-- 右侧回忆文字与观测信息。 -->
+          <article class="memory-copy">
+            <p class="signal-preview__eyebrow">MEMORY SIGNAL · 回忆信号</p>
+            <time id="preview-date"></time>
+            <h2 id="preview-title"></h2>
+            <p id="preview-text"></p>
+            <div class="signal-preview__meta">
+              <span id="preview-location"></span>
+              <span id="preview-season"></span>
+            </div>
+            <div class="memory-copy__archive">
+              <span id="memory-photo-count">0 PHOTOS</span>
+              <span>LOCAL ARCHIVE · 本地收藏</span>
+            </div>
+          </article>
+        </div>
+      </dialog>
+
+      <!-- 制作模式：点击页面右上角“添加星星”打开。 -->
+      <dialog class="maker-panel" id="maker-panel" aria-labelledby="maker-title">
+        <button class="maker-panel__close" type="button" aria-label="关闭制作模式">×</button>
+        <header class="maker-panel__header">
+          <p>MAKER MODE · 私人制作台</p>
+          <h2 id="maker-title">为银河添加一颗星</h2>
+          <span>星星不会被自动命名。这里的日期、名称与回忆，都由你亲自填写。</span>
+        </header>
+
+        <form class="maker-form">
+          <!-- 星域根据故事日期与纪念日自动匹配，用户无需手动选择。 -->
+          <section class="maker-auto-region" aria-labelledby="maker-region-label" aria-live="polite">
+            <span id="maker-region-label">自动归属星域</span>
+            <div class="maker-auto-region__value">
+              <span class="maker-auto-region__signal" aria-hidden="true"></span>
+              <strong id="maker-region-value">第 1 年 · 初见星域</strong>
+            </div>
+            <small id="maker-region-rule">2025.11.29 当天及此前日期归入第一片星域</small>
+          </section>
+
+          <!-- 三列滚轮日期选择器：鼠标滚轮与手机触摸均可直接滑动。 -->
+          <div class="maker-date" aria-labelledby="maker-date-label">
+            <span id="maker-date-label">发生日期</span>
+            <div class="date-wheel" role="group" aria-label="滚动选择发生日期">
+              <div class="date-wheel__focus" aria-hidden="true"></div>
+              <div class="date-wheel__column" id="maker-date-year" data-date-unit="year" tabindex="0" aria-label="年份"></div>
+              <div class="date-wheel__column" id="maker-date-month" data-date-unit="month" tabindex="0" aria-label="月份"></div>
+              <div class="date-wheel__column" id="maker-date-day" data-date-unit="day" tabindex="0" aria-label="日期"></div>
+            </div>
+            <input id="maker-date-value" name="date" type="hidden" required />
+          </div>
+
+          <label class="maker-form__wide">
+            <span>这颗星的名称</span>
+            <input name="title" type="text" maxlength="36" placeholder="由你亲自命名" required />
+          </label>
+
+          <label class="maker-form__wide">
+            <span>这段回忆</span>
+            <textarea name="excerpt" maxlength="280" rows="5" placeholder="写下你真正想记住的内容" required></textarea>
+          </label>
+
+          <label>
+            <span>地点（选填）</span>
+            <input name="location" type="text" maxlength="36" placeholder="例如：海边、家里" />
+          </label>
+
+          <!-- 照片在创建星星前选择，确认时与故事一起写入本地档案。 -->
+          <section class="maker-photos maker-form__wide" aria-labelledby="maker-photo-label">
+            <div class="maker-photos__heading">
+              <span id="maker-photo-label">回忆照片（选填，最多 8 张）</span>
+              <small id="maker-photo-count">0 / 8</small>
+            </div>
+            <label class="maker-photo-picker" for="maker-photo-input">
+              <span class="maker-photo-picker__icon" aria-hidden="true">＋</span>
+              <strong>选择照片</strong>
+              <small>可一次选择多张，确认添加后会直接出现在回忆卡片中</small>
+              <input id="maker-photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple />
+            </label>
+            <div class="maker-photo-preview" id="maker-photo-preview" aria-live="polite"></div>
+          </section>
+
+          <fieldset>
+            <legend>星光颜色</legend>
+            <label><input name="color" type="radio" value="gold" checked /><span class="maker-color maker-color--gold">暖金</span></label>
+            <label><input name="color" type="radio" value="rose" /><span class="maker-color maker-color--rose">暮粉</span></label>
+            <label><input name="color" type="radio" value="violet" /><span class="maker-color maker-color--violet">星紫</span></label>
+            <label><input name="color" type="radio" value="silver" /><span class="maker-color maker-color--silver">银白</span></label>
+          </fieldset>
+
+          <div class="maker-form__submit maker-form__wide">
+            <p id="maker-status" role="status"></p>
+            <button type="submit">确认添加这颗星</button>
+          </div>
+        </form>
+      </dialog>
+
+      <footer class="observatory-footer">
+        <span>OBSERVATION 002</span>
+        <span class="observatory-footer__line" aria-hidden="true"></span>
+        <span id="local-time">LOCAL SIGNAL · --:--:--</span>
+      </footer>
+    </main>
+
+    <noscript>
+      <p class="noscript-message">请启用 JavaScript，以观看这片会缓慢运行的银河。</p>
+    </noscript>
+
+    <!-- 普通延迟脚本保证双击本地 HTML 也能完整运行。加载顺序不可调换。 -->
+    <script defer src="./assets/js/stories.js?v=17"></script>
+    <script defer src="./assets/js/galaxy.js?v=11"></script>
+    <script defer src="./assets/js/story-store.js?v=23"></script>
+    <script defer src="./assets/js/memory-store.js?v=10"></script>
+    <script defer src="./assets/js/memory-card.js?v=22"></script>
+    <script defer src="./assets/js/journey.js?v=23"></script>
+    <script defer src="./assets/js/maker.js?v=23"></script>
+    <script defer src="./assets/js/app.js?v=23"></script>
+  </body>
+</html>
