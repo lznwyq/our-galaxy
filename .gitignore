@@ -5,3 +5,5 @@ rabbit-chinese-test.wav
 .DS_Store
 Thumbs.db
 
+# 其他任务生成的本地临时资料，不属于网站
+tmp/
